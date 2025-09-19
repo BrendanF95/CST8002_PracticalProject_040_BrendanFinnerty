@@ -19,12 +19,21 @@ namespace CST8002_PracticalProject
         static void Main(string[] args)
         {
             Console.WriteLine("CST8002 Practical Project - Brendan Finnerty");
+            DisplayHeader();
 
             clamRecords = new List<ClamRecord>();
             ReadClamDataFromCSV();
             DisplayAllClamRecords();
 
             Console.ReadKey();
+        }
+        private static void DisplayHeader()
+        {
+            Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
+            Console.WriteLine("║  CST8002 Practical Project 1 - Pacific Rim Clams Dataset    ║");
+            Console.WriteLine("║  Author: Brendan Finnerty                                    ║");
+            Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
+            Console.WriteLine();
         }
 
         private static void ReadClamDataFromCSV()
@@ -101,6 +110,7 @@ namespace CST8002_PracticalProject
             }
 
             Console.WriteLine($"\nTotal Records: {clamRecords.Count}");
+            Console.WriteLine($"\nProgram Author: Brendan Finnerty");
         }
     }
 
