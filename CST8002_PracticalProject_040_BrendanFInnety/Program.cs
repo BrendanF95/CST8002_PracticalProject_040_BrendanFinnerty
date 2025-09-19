@@ -22,6 +22,7 @@ namespace CST8002_PracticalProject
 
             clamRecords = new List<ClamRecord>();
             ReadClamDataFromCSV();
+            DisplayAllClamRecords();
 
             Console.ReadKey();
         }
@@ -87,6 +88,20 @@ namespace CST8002_PracticalProject
             {
                 Console.WriteLine($"Error parsing record: {ex.Message}");
             }
+
+        }
+        private static void DisplayAllClamRecords()
+        {
+            Console.WriteLine("\n=== DISPLAYING CLAM SURVEY RECORDS ===\n");
+
+            for (int i = 0; i < clamRecords.Count; i++)
+            {
+                Console.WriteLine($"Record #{i + 1}:");
+                clamRecords[i].DisplayRecord();
+            }
+
+            Console.WriteLine($"\nTotal Records: {clamRecords.Count}");
         }
     }
+
 }
