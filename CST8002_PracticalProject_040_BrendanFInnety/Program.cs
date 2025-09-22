@@ -30,7 +30,7 @@ namespace CST8002_PracticalProject
         private static void DisplayHeader()
         {
             Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
-            Console.WriteLine("║  CST8002 Practical Project 1 - Pacific Rim Clams Dataset    ║");
+            Console.WriteLine("║  CST8002 Practical Project 1 - Pacific Rim Clams Dataset     ║");
             Console.WriteLine("║  Author: Brendan Finnerty                                    ║");
             Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
             Console.WriteLine();
