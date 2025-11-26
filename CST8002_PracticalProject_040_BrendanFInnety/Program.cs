@@ -1,11 +1,11 @@
 ﻿/// <summary>
 /// Course: CST8002 - Programming Language Research
 /// Professor: Tyler Delay
-/// Due Date: November 2025
+/// Due Date: November 30 2025
 /// Author: Brendan Finnerty
 /// 
 /// Presentation layer - Handles user interface and interactions
-/// PROJECT 3: Updated to reflect database operations
+/// PROJECT 4: Added multi-column search/filter functionality
 /// </summary>
 
 using CST8002_PracticalProject.Model;
@@ -37,8 +37,8 @@ namespace CST8002_PracticalProject_040_BrendanFInnety
         private static void DisplayHeader()
         {
             Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
-            Console.WriteLine("║  CST8002 Practical Project 3 - Pacific Rim Clams Dataset     ║");
-            Console.WriteLine("║  DATABASE CONNECTIVITY - SQLite Implementation                ║");
+            Console.WriteLine("║  CST8002 Practical Project 4 - Pacific Rim Clams Dataset     ║");
+            Console.WriteLine("║  MULTI-COLUMN SEARCH/FILTER - SQLite Implementation          ║");
             Console.WriteLine($"║  Program by: {AUTHOR_NAME,-46}║");
             Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
             Console.WriteLine();
@@ -99,6 +99,9 @@ namespace CST8002_PracticalProject_040_BrendanFInnety
                         DeleteRecordMenu();
                         break;
                     case "6":
+                        SearchFilterMenu();
+                        break;
+                    case "7":
                         running = false;
                         Console.WriteLine("\nThank you for using the Clam Data Manager!");
                         Console.WriteLine($"Program by: {AUTHOR_NAME}");
@@ -122,7 +125,8 @@ namespace CST8002_PracticalProject_040_BrendanFInnety
             Console.WriteLine("3. Create new record in database");
             Console.WriteLine("4. Edit existing record in database");
             Console.WriteLine("5. Delete record from database");
-            Console.WriteLine("6. Exit");
+            Console.WriteLine("6. Search/Filter records (NEW - Project 4)");
+            Console.WriteLine("7. Exit");
             Console.Write("\nEnter your choice: ");
         }
 
@@ -372,6 +376,119 @@ namespace CST8002_PracticalProject_040_BrendanFInnety
                     Console.WriteLine($"ERROR: {ex.Message}");
                 }
             }
+        }
+
+        /// <summary>
+        /// PROJECT 4: Handles multi-column search/filter functionality
+        /// Allows users to search across multiple fields simultaneously
+        /// </summary>
+        private static void SearchFilterMenu()
+        {
+            Console.WriteLine("\n╔══════════════════════════════════════════════════════════════╗");
+            Console.WriteLine("║         MULTI-COLUMN SEARCH/FILTER (Project 4)               ║");
+            Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
+            Console.WriteLine("\nEnter search criteria for any field (press Enter to skip):");
+            Console.WriteLine("Note: Search is case-insensitive and matches partial text\n");
+
+            Console.Write("Site Identification: ");
+            string siteFilter = Console.ReadLine()?.Trim();
+
+            Console.Write("Year: ");
+            string yearFilter = Console.ReadLine()?.Trim();
+
+            Console.Write("Transect: ");
+            string transectFilter = Console.ReadLine()?.Trim();
+
+            Console.Write("Quadrat: ");
+            string quadratFilter = Console.ReadLine()?.Trim();
+
+            Console.Write("Species Common Name: ");
+            string speciesFilter = Console.ReadLine()?.Trim();
+
+            Console.Write("Count: ");
+            string countFilter = Console.ReadLine()?.Trim();
+
+            try
+            {
+                // Count active filters
+                int activeFilters = dataManager.GetActiveFilterCount(
+                    siteFilter, yearFilter, transectFilter,
+                    quadratFilter, speciesFilter, countFilter);
+
+                if (activeFilters == 0)
+                {
+                    Console.WriteLine("\nNo search criteria entered. Returning to main menu.");
+                    return;
+                }
+
+                // Display active filters
+                Console.WriteLine($"\n=== ACTIVE FILTERS ({activeFilters}) ===");
+                if (!string.IsNullOrWhiteSpace(siteFilter))
+                    Console.WriteLine($"  - Site contains: '{siteFilter}'");
+                if (!string.IsNullOrWhiteSpace(yearFilter))
+                    Console.WriteLine($"  - Year contains: '{yearFilter}'");
+                if (!string.IsNullOrWhiteSpace(transectFilter))
+                    Console.WriteLine($"  - Transect contains: '{transectFilter}'");
+                if (!string.IsNullOrWhiteSpace(quadratFilter))
+                    Console.WriteLine($"  - Quadrat contains: '{quadratFilter}'");
+                if (!string.IsNullOrWhiteSpace(speciesFilter))
+                    Console.WriteLine($"  - Species contains: '{speciesFilter}'");
+                if (!string.IsNullOrWhiteSpace(countFilter))
+                    Console.WriteLine($"  - Count contains: '{countFilter}'");
+
+                // Perform search
+                Console.WriteLine("\nSearching database...");
+                List<ClamRecord> results = dataManager.SearchRecords(
+                    siteFilter, yearFilter, transectFilter,
+                    quadratFilter, speciesFilter, countFilter);
+
+                // Display results
+                DisplaySearchResults(results, activeFilters);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nERROR during search: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// PROJECT 4: Displays search results with formatting
+        /// Helper method to present filtered records to the user
+        /// </summary>
+        /// <param name="results">List of matching records</param>
+        /// <param name="filterCount">Number of filters applied</param>
+        private static void DisplaySearchResults(List<ClamRecord> results, int filterCount)
+        {
+            Console.WriteLine("\n╔══════════════════════════════════════════════════════════════╗");
+            Console.WriteLine($"║  SEARCH RESULTS: {results.Count} matching records found");
+            Console.WriteLine($"║  Filters applied: {filterCount}");
+            Console.WriteLine("╚══════════════════════════════════════════════════════════════╝\n");
+
+            if (results.Count == 0)
+            {
+                Console.WriteLine("No records match your search criteria.");
+                Console.WriteLine($"Program by: {AUTHOR_NAME}");
+                return;
+            }
+
+            // Display all matching records
+            for (int i = 0; i < results.Count; i++)
+            {
+                Console.WriteLine($"Result #{i + 1}: {results[i].ToString()}");
+
+                // Add author name every 10 results
+                if ((i + 1) % 10 == 0)
+                {
+                    Console.WriteLine($"--- Program by: {AUTHOR_NAME} ---");
+                }
+            }
+
+            Console.WriteLine($"\nTotal matching records: {results.Count}");
+            Console.WriteLine($"Program by: {AUTHOR_NAME}");
+
+            // Offer to export or further refine search
+            Console.WriteLine("\nPress Enter to return to main menu...");
+            Console.ReadLine();
         }
     }
 }

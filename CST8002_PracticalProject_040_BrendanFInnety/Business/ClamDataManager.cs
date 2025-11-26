@@ -1,16 +1,17 @@
 ﻿/// <summary>
 /// Course: CST8002 - Programming Language Research
 /// Professor: Tyler Delay
-/// Due Date: November 2025
+/// Due Date: November 30 2025
 /// Author: Brendan Finnerty
 /// 
 /// Business layer - Manages clam data operations and business logic
-/// PROJECT 3: Updated to work with database operations
+/// PROJECT 4: Added multi-column search/filter functionality
 /// </summary>
 
 using CST8002_PracticalProject.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CST8002_PracticalProject_040_BrendanFInnety
 {
@@ -134,11 +135,9 @@ namespace CST8002_PracticalProject_040_BrendanFInnety
             {
                 if (index >= 1 && updatedRecord != null)
                 {
-                    // Get all records to find the actual database ID
                     List<ClamRecord> records = repository.LoadRecords();
                     if (index <= records.Count)
                     {
-                        // Get the actual database ID from the record at this position
                         int databaseId = records[index - 1].Id;
                         return repository.UpdateRecord(databaseId, updatedRecord);
                     }
@@ -162,11 +161,9 @@ namespace CST8002_PracticalProject_040_BrendanFInnety
             {
                 if (index >= 1)
                 {
-                    // Get all records to verify the index exists
                     List<ClamRecord> records = repository.LoadRecords();
                     if (index <= records.Count)
                     {
-                        // Get the actual database ID from the record at this position
                         int databaseId = records[index - 1].Id;
                         return repository.DeleteRecord(databaseId);
                     }
@@ -177,6 +174,109 @@ namespace CST8002_PracticalProject_040_BrendanFInnety
             {
                 throw;
             }
+        }
+
+        /// <summary>
+        /// PROJECT 4: Searches records based on multiple column criteria
+        /// Performs case-insensitive partial matching on specified fields
+        /// </summary>
+        /// <param name="siteFilter">Filter for site identification (null/empty to skip)</param>
+        /// <param name="yearFilter">Filter for year (null/empty to skip)</param>
+        /// <param name="transectFilter">Filter for transect (null/empty to skip)</param>
+        /// <param name="quadratFilter">Filter for quadrat (null/empty to skip)</param>
+        /// <param name="speciesFilter">Filter for species common name (null/empty to skip)</param>
+        /// <param name="countFilter">Filter for count (null/empty to skip)</param>
+        /// <returns>List of records matching all specified criteria</returns>
+        public List<ClamRecord> SearchRecords(
+            string siteFilter = null,
+            string yearFilter = null,
+            string transectFilter = null,
+            string quadratFilter = null,
+            string speciesFilter = null,
+            string countFilter = null)
+        {
+            try
+            {
+                List<ClamRecord> allRecords = repository.LoadRecords();
+                List<ClamRecord> filteredRecords = allRecords;
+
+                // Apply site filter if provided
+                if (!string.IsNullOrWhiteSpace(siteFilter))
+                {
+                    filteredRecords = filteredRecords
+                        .Where(r => r.SiteIdentification.IndexOf(siteFilter, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .ToList();
+                }
+
+                // Apply year filter if provided
+                if (!string.IsNullOrWhiteSpace(yearFilter))
+                {
+                    filteredRecords = filteredRecords
+                        .Where(r => r.Year.IndexOf(yearFilter, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .ToList();
+                }
+
+                // Apply transect filter if provided
+                if (!string.IsNullOrWhiteSpace(transectFilter))
+                {
+                    filteredRecords = filteredRecords
+                        .Where(r => r.Transect.IndexOf(transectFilter, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .ToList();
+                }
+
+                // Apply quadrat filter if provided
+                if (!string.IsNullOrWhiteSpace(quadratFilter))
+                {
+                    filteredRecords = filteredRecords
+                        .Where(r => r.Quadrat.IndexOf(quadratFilter, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .ToList();
+                }
+
+                // Apply species filter if provided
+                if (!string.IsNullOrWhiteSpace(speciesFilter))
+                {
+                    filteredRecords = filteredRecords
+                        .Where(r => r.SpeciesCommonName.IndexOf(speciesFilter, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .ToList();
+                }
+
+                // Apply count filter if provided
+                if (!string.IsNullOrWhiteSpace(countFilter))
+                {
+                    filteredRecords = filteredRecords
+                        .Where(r => r.Count.IndexOf(countFilter, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .ToList();
+                }
+
+                return filteredRecords;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// PROJECT 4: Gets count of active filter criteria
+        /// Helper method to determine how many filters are being applied
+        /// </summary>
+        /// <returns>Number of non-empty filter parameters</returns>
+        public int GetActiveFilterCount(
+            string siteFilter,
+            string yearFilter,
+            string transectFilter,
+            string quadratFilter,
+            string speciesFilter,
+            string countFilter)
+        {
+            int count = 0;
+            if (!string.IsNullOrWhiteSpace(siteFilter)) count++;
+            if (!string.IsNullOrWhiteSpace(yearFilter)) count++;
+            if (!string.IsNullOrWhiteSpace(transectFilter)) count++;
+            if (!string.IsNullOrWhiteSpace(quadratFilter)) count++;
+            if (!string.IsNullOrWhiteSpace(speciesFilter)) count++;
+            if (!string.IsNullOrWhiteSpace(countFilter)) count++;
+            return count;
         }
     }
 }
